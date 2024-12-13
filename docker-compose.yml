@@ -1,15 +1,15 @@
-version: '3.8'
+version: "3.8"
 services:
   mongo:
     image: mongo:latest
-    container_name: mongo
+    container_name: mongo-producer-consumer
     restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
     networks:
-      - mongo_network
+      - app-network
 
   kafka-1:
     image: bitnami/kafka:latest
@@ -37,13 +37,38 @@ services:
       test:
         [
           "CMD-SHELL",
-          "kafka-topics.sh --bootstrap-server localhost:8082 --list"
+          "kafka-topics.sh --bootstrap-server localhost:8082 --list",
         ]
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
-      - kafka-network
+      - app-network
+
+  producer:
+    build: ./producer
+    container_name: producer
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - kafka-1
+    networks:
+      - app-network
+
+  consumer:
+    build: ./consumer
+    container_name: consumer
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongo
+      - kafka-1
+      - producer
+    networks:
+      - app-network
 
 volumes:
   mongo_data:
@@ -52,7 +77,5 @@ volumes:
     driver: local
 
 networks:
-  mongo_network:
-    driver: bridge
-  kafka-network:
+  app-network:
     driver: bridge
