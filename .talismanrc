@@ -4,3 +4,9 @@ fileignoreconfig:
   - filename: producer
     checksum: b069bfd8746bf684c58d23cb6eb0c821a7d3a5b51ad837ca5c9be2071a1efa59
 version: ""
+
+
+fileignoreconfig:
+- filename: docker-compose.yml
+  checksum: 480597cf2573608fbe49fe23f5a7fb41670fb826dddec1060d36061877e8940a
+version: ""
