@@ -1,0 +1,6 @@
+fileignoreconfig:
+  - filename: consumer
+    checksum: 82528344823f8653b2562b1229a64b3d9d2c422b4f7f0504c27d03fdf0223358
+  - filename: producer
+    checksum: b069bfd8746bf684c58d23cb6eb0c821a7d3a5b51ad837ca5c9be2071a1efa59
+version: ""

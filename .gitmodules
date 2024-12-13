@@ -1,0 +1,6 @@
+[submodule "producer"]
+	path = producer
+	url = git@github.com:nagendra-tw/minimalist-iot-platform.git
+[submodule "consumer"]
+	path = consumer
+	url = git@github.com:nagendra-tw/minimalist-iot-platform-consumer.git
