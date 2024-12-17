@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: kafka-1
   labels:
-    app: kafka
+    app: kafka-service
 spec:
   containers:
     - name: kafka
