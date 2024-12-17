@@ -46,7 +46,8 @@ services:
       - app-network
 
   producer:
-    build: ./producer
+    # build: ./producer
+    image: nagendra9/iot-platform-producer:0.1
     container_name: producer
     environment:
       - JWT_SECRET=${JWT_SECRET}
@@ -59,7 +60,8 @@ services:
       - app-network
 
   consumer:
-    build: ./consumer
+    # build: ./consumer
+    image: nagendra9/iot-platform-consumer:0.1
     container_name: consumer
     ports:
       - "8082:8082"
