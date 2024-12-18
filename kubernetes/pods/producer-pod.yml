@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: producer-pod
   labels:
-    app: proucer-microservice
+    app: producer-microservice
 spec:
   containers:
     - name: producer-container

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+        - name: producer
+          image: nagendra9/iot-platform-producer:0.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JWT_SECRET
+              value: thesecretoftheuniverseisjwtthesecretoftheuniverseisjwtthesecretoftheuniverseisjwtthesecretoftheuniverseisjwt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: producer
+spec:
+  type: NodePort
+  selector:
+    app: producer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080

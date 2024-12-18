@@ -3,10 +3,10 @@ kind: Pod
 metadata:
   name: consumer-pod
   labels:
-    name: consumer-microservice
+    app: consumer-microservice
 spec:
   containers:
-    - name: myapp
+    - name: consumer-container
       image: nagendra9/iot-platform-consumer:0.1
       ports:
         - containerPort: 8082

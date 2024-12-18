@@ -1,0 +1,213 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+# MongoDB Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+
+# Kafka Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-1
+  template:
+    metadata:
+      labels:
+        app: kafka-1
+    spec:
+      containers:
+        - name: kafka
+          image: bitnami/kafka:latest
+          ports:
+            - containerPort: 9092
+            - containerPort: 9093
+            - containerPort: 29092
+          env:
+            - name: BITNAMI_DEBUG
+              value: "yes"
+            - name: KAFKA_CFG_NODE_ID
+              value: "1"
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: "controller,broker"
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: "1@kafka-1:9093"
+            - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT"
+            - name: KAFKA_CFG_LISTENERS
+              value: "CONTROLLER://:9093,CLIENT://:29092,EXTERNAL://:9092"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: "CLIENT://kafka-1:29092,EXTERNAL://localhost:9092"
+            - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+              value: "CLIENT"
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_KRAFT_CLUSTER_ID
+              value: "fztU8TfA55Holo3Cd0V3"
+            - name: KAFKA_CFG_NUM_PARTITIONS
+              value: "3"
+            - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+              value: "1"
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+            - name: KAFKA_ENABLE_KRAFT
+              value: "yes"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /bitnami/kafka
+      volumes:
+        - name: kafka-data
+          persistentVolumeClaim:
+            claimName: kafka-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-1
+spec:
+  selector:
+    app: kafka-1
+  ports:
+    - name: external
+      port: 9092
+      targetPort: 9092
+    - name: client
+      port: 29092
+      targetPort: 29092
+    - name: controller
+      port: 9093
+      targetPort: 9093
+
+# Producer Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+        - name: producer
+          image: nagendra9/iot-platform-producer:0.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JWT_SECRET
+              value: thesecretoftheuniverseisjwtthesecretoftheuniverseisjwtthesecretoftheuniverseisjwtthesecretoftheuniverseisjwt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: producer
+spec:
+  type: NodePort
+  selector:
+    app: producer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+# Consumer Deployment and Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+        - name: consumer
+          image: nagendra9/iot-platform-consumer:0.1
+          ports:
+            - containerPort: 8082
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer
+spec:
+  selector:
+    app: consumer
+  ports:
+    - port: 8082
+      targetPort: 8082
